@@ -11,7 +11,9 @@
 
 int main( int argc, char* argv[] )
 {
-	double desiredResolution = 200; // in DPI
+    double desiredScale = 1;
+    double desiredWidth = 0;
+    double desiredHeight = 0;
 
 	BOOL morePages = YES;
 	int page = 1;
@@ -27,15 +29,26 @@ int main( int argc, char* argv[] )
 		[args addObject: [NSString stringWithUTF8String: argv[i]] ];
 	}
 	
-	// If we have a "--dpi" along with a corresponding argument ...
 	NSUInteger index = NSNotFound;
-	if ( (index = [args indexOfObject: @"--dpi"]) != NSNotFound && index + 1 < [args count] )
+	if ( (index = [args indexOfObject: @"--size"]) != NSNotFound && index + 1 < [args count] )
 	{
-		// Parse it as an integer
-		desiredResolution = [[args objectAtIndex: index + 1] doubleValue];
+		// Parse it as an doublexdouble
+        NSString *sizeString = [args objectAtIndex: index + 1];
+        NSArray *sizeComps = [sizeString componentsSeparatedByString:@"x"];
+        desiredWidth = [sizeComps[0] doubleValue];
+        desiredHeight = sizeComps.count > 1 ? [sizeComps[1] doubleValue] : desiredHeight;
 		[args removeObjectAtIndex: index + 1];
 		[args removeObjectAtIndex: index];
 	}
+    
+    if ( (index = [args indexOfObject: @"--scale"]) != NSNotFound && index + 1 < [args count] )
+    {
+        // Parse it as an double
+        desiredScale = [[args objectAtIndex: index + 1] doubleValue];
+        [args removeObjectAtIndex: index + 1];
+        [args removeObjectAtIndex: index];
+    }
+
 	
 	// If we have a "--page" along with a corresponding argument ...
 	if ( (index = [args indexOfObject: @"--page"]) != NSNotFound && index + 1 < [args count] )
@@ -65,10 +78,11 @@ int main( int argc, char* argv[] )
         [args removeObjectAtIndex: index];
     }
 
-    if ( [args count] != 1 || [args indexOfObject: @"--help"] != NSNotFound || desiredResolution <= 0 || page <= 0 )
+    if ( [args count] != 1 || [args indexOfObject: @"--help"] != NSNotFound || page <= 0 )
 	{
 		fprintf( stderr, "pdf2png [options] file\n" );
-		fprintf( stderr, "\t--dpi dpi\tSpecifies the resolution at which to export the pages\n" );
+		fprintf( stderr, "\t--size widthxheight\tSpecifies the resolution at which to export the pages\n" );
+        fprintf( stderr, "\t--scale scale\tSpecifies the scale at which to export the pages\n" );
 		fprintf( stderr, "\t--page page\tSingle page to export\n" );
 		fprintf( stderr, "\t--transparent\tDo not fill background white color, keep transparency from PDF.\n" );
         fprintf( stderr, "\t--output path\tSpecify output file path. This implies --page 1 if not specified. ( Without this option, PDFNAME-p1.png (example) is created on same directory )\n" );
@@ -131,9 +145,21 @@ int main( int argc, char* argv[] )
     double sourceResolution = 72.0;
     // int pixels = [ [source bestRepresentationForDevice: nil] pixelsWide];
     // if ( pixels != 0 ) sourceResolution = ((double)pixels / sourceSize.width) * 72.0;
-    double scaleFactor = desiredResolution / sourceResolution; 
-	
-    NSSize size = NSMakeSize( sourceSize.width * scaleFactor, sourceSize.height * scaleFactor );
+        
+    CGFloat screenScale = [[NSScreen mainScreen] backingScaleFactor];
+
+    double targetScaledWidth = sourceSize.width / screenScale;
+    double targetScaledHeight = sourceSize.height / screenScale;
+
+    if (desiredWidth > 0 && desiredHeight > 0) {
+        targetScaledWidth = desiredWidth/screenScale;
+        targetScaledHeight = desiredHeight/screenScale;
+    }
+        
+    targetScaledWidth *= desiredScale;
+    targetScaledHeight *= desiredScale;
+
+    NSSize size = NSMakeSize( targetScaledWidth, targetScaledHeight );
 
     //	[source setSize: size];
 		NSRect sourceRect = NSMakeRect( 0, 0, sourceSize.width, sourceSize.height );
