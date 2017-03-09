@@ -61,10 +61,10 @@ int main( int argc, char* argv[] )
 	}
 
 	// --transparent    Do not fill background white color, keep transparency from PDF.
-  BOOL keepTransparent = NO;
-	if ( (index = [args indexOfObject: @"--transparent"]) != NSNotFound )
+    BOOL keepTransparent = YES;
+	if ( (index = [args indexOfObject: @"--no-transparent"]) != NSNotFound )
 	{
-		keepTransparent = YES;
+		keepTransparent = NO;
 		[args removeObjectAtIndex: index];
 	}
 	
@@ -84,7 +84,7 @@ int main( int argc, char* argv[] )
 		fprintf( stderr, "\t--size widthxheight\tSpecifies the resolution at which to export the pages\n" );
         fprintf( stderr, "\t--scale scale\tSpecifies the scale at which to export the pages\n" );
 		fprintf( stderr, "\t--page page\tSingle page to export\n" );
-		fprintf( stderr, "\t--transparent\tDo not fill background white color, keep transparency from PDF.\n" );
+		fprintf( stderr, "\t--no-transparent\tDo fill background white color, keep transparency from PDF.\n" );
         fprintf( stderr, "\t--output path\tSpecify output file path. This implies --page 1 if not specified. ( Without this option, PDFNAME-p1.png (example) is created on same directory )\n" );
 		fprintf( stderr, "\t--help\tPrint this help message\n" );
 		return 1;
