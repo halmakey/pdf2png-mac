@@ -128,8 +128,10 @@ int main( int argc, char* argv[] )
 	
 
     [NSApplication sharedApplication];
-    [[NSGraphicsContext currentContext] setImageInterpolation: NSImageInterpolationHigh];
-	
+    [[NSGraphicsContext currentContext] setShouldAntialias:YES];
+    [[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
+    [[NSGraphicsContext currentContext] setColorRenderingIntent:NSColorRenderingIntentPerceptual];
+
 	
 	do
 	{
@@ -168,6 +170,10 @@ int main( int argc, char* argv[] )
     NSImage* image = [[NSImage alloc] initWithSize:size];
     [image lockFocus];
 
+        [NSApplication sharedApplication];
+        [[NSGraphicsContext currentContext] setShouldAntialias:YES];
+        [[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
+        [[NSGraphicsContext currentContext] setColorRenderingIntent:NSColorRenderingIntentPerceptual];
 
 		if (keepTransparent) {
 			[pdfSource drawInRect: destinationRect
